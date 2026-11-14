@@ -1,5 +1,5 @@
 includes:
-    - vendor/junges/coding-style/presets/phpstan.neon
+    - vendor/mateusjunges/coding-style/presets/phpstan.neon
 
 parameters:
     paths:

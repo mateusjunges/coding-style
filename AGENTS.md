@@ -5,7 +5,7 @@ This repository is a Laravel package. Keep the package focused, idiomatic, and e
 ## Package Conventions
 
 - Use Laravel-native package APIs and the existing service provider shape before adding abstractions.
-- Keep package names, namespaces, Composer metadata, publish tags, documentation, and examples aligned with `junges/coding-style`.
+- Keep package names, namespaces, Composer metadata, publish tags, documentation, and examples aligned with `mateusjunges/coding-style`.
 - Add only the files and dependencies needed for the package behavior being implemented.
 - Prefer explicit Laravel package code over helper abstractions unless the extension point is real.
 - Keep tests focused on observable package behavior through public APIs, service provider wiring, commands, routes, published resources, and documentation promises.
@@ -21,7 +21,7 @@ This repository is a Laravel package. Keep the package focused, idiomatic, and e
 
 ## Layout
 
-- `presets/` holds the shared Pint and PHPStan configuration that applications reference from `vendor/junges/coding-style/presets`. Moving or renaming these files breaks every application using the package.
+- `presets/` holds the shared Pint and PHPStan configuration that applications reference from `vendor/mateusjunges/coding-style/presets`. Moving or renaming these files breaks every application using the package.
 - `src/Rector.php` builds the shared Rector configuration.
 - `stubs/` holds the files `coding-style:install` publishes into an application.
 - `resources/boost/guidelines/core.blade.php` holds the Laravel Boost guidelines for applications.

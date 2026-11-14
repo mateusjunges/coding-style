@@ -23,7 +23,7 @@ It also ships [Laravel Boost](https://github.com/laravel/boost) guidelines, so A
 ## Installation
 
 ```bash
-composer require --dev junges/coding-style
+composer require --dev mateusjunges/coding-style
 php artisan coding-style:install
 ```
 
@@ -49,7 +49,7 @@ Pint merges `pint.json` on top of the preset, so a rule can be added or turned o
 
 ```json
 {
-    "extend": "vendor/junges/coding-style/presets/pint.json",
+    "extend": "vendor/mateusjunges/coding-style/presets/pint.json",
     "rules": {
         "strict_comparison": false
     }

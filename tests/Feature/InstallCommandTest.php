@@ -51,9 +51,9 @@ it('publishes the configuration files', function (): void {
 
     expect($this->basePath.'/pint.json')->toBeFile()
         ->and(json_decode((string) file_get_contents($this->basePath.'/pint.json'), true))
-        ->toBe(['extend' => 'vendor/junges/coding-style/presets/pint.json'])
+        ->toBe(['extend' => 'vendor/mateusjunges/coding-style/presets/pint.json'])
         ->and(file_get_contents($this->basePath.'/rector.php'))->toContain('Rector::configure(__DIR__)')
-        ->and(file_get_contents($this->basePath.'/phpstan.neon'))->toContain('vendor/junges/coding-style/presets/phpstan.neon')
+        ->and(file_get_contents($this->basePath.'/phpstan.neon'))->toContain('vendor/mateusjunges/coding-style/presets/phpstan.neon')
         ->and($this->basePath.'/.editorconfig')->toBeFile()
         ->and($this->basePath.'/.github/workflows/coding-style.yml')->not->toBeFile();
 });
@@ -99,7 +99,7 @@ it('asks before replacing an existing file', function (bool $answer, string $exp
 
     expect(file_get_contents($this->basePath.'/pint.json'))->toContain($expected);
 })->with([
-    'replaced' => [true, 'vendor/junges/coding-style/presets/pint.json'],
+    'replaced' => [true, 'vendor/mateusjunges/coding-style/presets/pint.json'],
     'kept' => [false, 'psr12'],
 ]);
 
@@ -108,7 +108,7 @@ it('replaces existing files with the force option', function (): void {
 
     $this->artisan('coding-style:install', ['--force' => true, '--no-interaction' => true])->assertSuccessful();
 
-    expect(file_get_contents($this->basePath.'/pint.json'))->toContain('vendor/junges/coding-style/presets/pint.json');
+    expect(file_get_contents($this->basePath.'/pint.json'))->toContain('vendor/mateusjunges/coding-style/presets/pint.json');
 });
 
 it('keeps different existing composer scripts unless forced', function (): void {

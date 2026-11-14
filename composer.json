@@ -1,6 +1,6 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "junges/coding-style",
+    "name": "mateusjunges/coding-style",
     "description": "Opinionated coding style tooling for Laravel applications",
     "keywords": [
         "laravel",
