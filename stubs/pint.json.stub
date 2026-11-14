@@ -1,0 +1,3 @@
+{
+    "extend": "vendor/junges/coding-style/presets/pint.json"
+}
