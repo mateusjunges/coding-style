@@ -119,6 +119,8 @@ Pint only extends configuration files that live inside the project. Installing t
 
 Rector picks the PHP version sets from the `require.php` constraint in the application's `composer.json`, and caches its results in `storage/framework/cache/rector`.
 
+The Rector preset skips the rules that promote assigned properties to the constructor or drop their default values. `unserialize()` fills missing properties from their declared defaults without calling the constructor, so those changes leave an uninitialized property on a queued job or cached object that was serialized before the property existed.
+
 ## Developing the package
 
 ```bash
