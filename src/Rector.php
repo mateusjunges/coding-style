@@ -66,7 +66,8 @@ final class Rector
             )
             ->withPhpSets()
             // Import the class names Rector adds, such as return types, instead of writing them fully qualified.
-            ->withImportNames(importShortClasses: false)
+            // Docblocks are left as written, so fully qualified names in PHPDoc types stay untouched.
+            ->withImportNames(importDocBlockNames: false, importShortClasses: false)
             ->withCache($basePath.'/storage/framework/cache/rector');
     }
 
