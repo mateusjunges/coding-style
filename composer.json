@@ -21,9 +21,9 @@
     ],
     "require": {
         "php": "^8.5",
-        "illuminate/console": "^12.0||^13.0",
-        "illuminate/filesystem": "^12.0||^13.0",
-        "illuminate/support": "^12.0||^13.0",
+        "illuminate/console": "^12.8||^13.0",
+        "illuminate/filesystem": "^12.8||^13.0",
+        "illuminate/support": "^12.8||^13.0",
         "larastan/larastan": "^3.9",
         "laravel/pint": "^1.29",
         "rector/rector": "^2.6"
