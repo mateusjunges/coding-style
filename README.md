@@ -105,6 +105,12 @@ class PaymentGateway
 
 The `@final` tag does not help a class that is extended. PHPStan treats it as final and reports `extends @final class`.
 
+## Migrating an existing application
+
+When the application already has its own Pint, Rector and PHPStan setup, run the install command with `--force` to replace the configuration files and the composer scripts with the same names. Then remove what the old setup leaves behind, such as a separate Rector installation (for example `tools/rector`), composer scripts that call it, and its cache directory (for example `cache/rector`). The preset caches Rector results in `storage/framework/cache/rector`, so an old cache directory is no longer excluded and Pint formats the stale files in it.
+
+Run `composer cs` and the test suite afterwards, and review the diff before committing it.
+
 ## Notes
 
 The PHPStan preset includes the Larastan and Carbon extensions itself. If the application uses `phpstan/extension-installer`, PHPStan reports those files as included twice. Remove the extension installer, or replace the preset include with your own parameters.
