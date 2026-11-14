@@ -2,7 +2,7 @@
 
 # Coding Style
 
-My coding style for Laravel applications, packaged so a new application gets the same Pint, Rector and PHPStan setup with one command.
+My coding style for Laravel applications, packaged so a new application gets the same Pint, Rector and PHPStan setup, and the same application defaults, with one command.
 
 The rules live in this package and the application only keeps thin configuration files that point at them. Updating the package updates the coding style of every application that uses it.
 
@@ -15,6 +15,7 @@ The rules live in this package and the application only keeps thin configuration
 | [PHPStan](https://phpstan.org) with [Larastan](https://github.com/larastan/larastan) | `presets/phpstan.neon` | `phpstan.neon` includes the preset |
 | EditorConfig | | `.editorconfig` |
 | GitHub Actions (optional) | | `.github/workflows/coding-style.yml` |
+| Application defaults (optional) | | `app/Providers/DefaultsServiceProvider.php` |
 
 Pint, Rector and Larastan are dependencies of this package, so they don't need to be required separately.
 
@@ -37,9 +38,29 @@ The install command publishes the configuration files and adds these composer sc
 | `composer rector` / `composer rector:check` | Rector only |
 | `composer types:check` | PHPStan only |
 
-When a file already exists the command asks before replacing it. Composer scripts with the same name but a different command are kept. Pass `--force` to replace both without asking, and `--workflow` to publish the GitHub Actions workflow without being asked.
+When a file already exists the command asks before replacing it. Composer scripts with the same name but a different command are kept. Pass `--force` to replace both without asking. Pass `--workflow` and `--defaults` to publish the GitHub Actions workflow and the defaults provider without being asked.
 
 After installing, run `composer cs` once to bring the existing code in line.
+
+## Application defaults
+
+The defaults provider sets the runtime defaults I use in every application:
+
+| Default | Environments |
+| --- | --- |
+| `Date::use(CarbonImmutable::class)`, so dates are immutable | All |
+| `Model::automaticallyEagerLoadRelationships()` | All |
+| `Model::shouldBeStrict()`, which throws on lazy loading, on accessing missing attributes and on silently discarded attributes | All except production |
+| `DB::prohibitDestructiveCommands()`, which refuses `migrate:fresh`, `db:wipe` and similar commands | Production |
+| Passwords of at least 12 characters with mixed case, letters, numbers and symbols, checked against known leaks | Production |
+| `URL::forceHttps()` | Production |
+| `Http::preventStrayRequests()` and `Sleep::fake()` | Tests |
+
+The provider is published into the application instead of being loaded from this package. This package is a dev dependency, so it isn't installed in production, where most of these defaults matter. The published file belongs to the application, so change or remove any default there. Changes to the stub in later versions of this package don't reach applications that already published it.
+
+The install command registers the provider in `bootstrap/providers.php`. Laravel's starter kits set some of these defaults in `AppServiceProvider::configureDefaults()`, and the command warns about the calls it finds there so they can be removed.
+
+Strict models is the default most likely to break an existing application. It turns code that reads optional attributes, such as `$model->total ?? 0` on a query that didn't select `total`, into an exception outside production. Run the test suite after publishing the provider.
 
 ## Customizing an application
 
