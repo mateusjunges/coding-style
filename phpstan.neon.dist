@@ -1,0 +1,11 @@
+includes:
+    - presets/phpstan.neon
+
+parameters:
+    paths:
+        - src
+    tmpDir: build/phpstan
+
+    # Rector loads its rules with its own autoloader, which static analysis cannot follow.
+    scanDirectories:
+        - vendor/rector/rector/rules
