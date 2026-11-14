@@ -71,9 +71,28 @@ return Rector::configure(__DIR__)
 
 PHPStan parameters set in `phpstan.neon` override the preset, for example a different `level`.
 
-## Notes
+## Final classes
 
-Every class that is not abstract is made `final` by Pint's `final_class` rule. Pint does not check whether a class has children, so a concrete class that another class extends breaks after formatting. PHPStan reports it (`extends final class`) as part of `composer cs`, as long as both classes are inside the analysed paths. Make the parent `abstract` instead. Mockery cannot mock final classes either, so bind dependencies you mock to an interface. When a class really has to stay open, add a `@final` tag to its docblock and Pint leaves it alone:
+Every class that is not abstract is made `final` by Pint's `final_class` rule. Pint does not check whether a class has children, so a concrete class that another class extends breaks after formatting. PHPStan reports it (`extends final class`) as part of `composer cs`, as long as both classes are inside the analysed paths.
+
+When a concrete class is extended, move the shared code into an abstract parent and let both concrete classes extend it:
+
+```php
+abstract class NdviIndex extends VegetationIndex
+{
+    // Shared behavior.
+}
+
+final class PlainNdviIndex extends NdviIndex
+{
+}
+
+final class ContrastedNdviIndex extends NdviIndex
+{
+}
+```
+
+Mockery cannot mock final classes either. Bind dependencies you mock to an interface. When a class has to be mocked and an interface is not worth it, add a `@final` tag to its docblock. Pint then leaves the class non-final, so Mockery can mock it:
 
 ```php
 /**
@@ -83,6 +102,10 @@ class PaymentGateway
 {
 }
 ```
+
+The `@final` tag does not help a class that is extended. PHPStan treats it as final and reports `extends @final class`.
+
+## Notes
 
 The PHPStan preset includes the Larastan and Carbon extensions itself. If the application uses `phpstan/extension-installer`, PHPStan reports those files as included twice. Remove the extension installer, or replace the preset include with your own parameters.
 
