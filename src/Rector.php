@@ -6,6 +6,8 @@ namespace Junges\CodingStyle;
 
 use Rector\Config\RectorConfig;
 use Rector\Configuration\RectorConfigBuilder;
+use Rector\DeadCode\Rector\Property\RemoveDefaultValueFromAssignedPropertyRector;
+use Rector\Php80\Rector\Class_\ClassPropertyAssignToConstructorPromotionRector;
 use Rector\Php81\Rector\Array_\ArrayToFirstClassCallableRector;
 use Rector\Php81\Rector\FuncCall\NullToStrictStringFuncCallArgRector;
 use Rector\Privatization\Rector\ClassMethod\PrivatizeFinalClassMethodRector;
@@ -55,6 +57,12 @@ final class Rector
                 PrivatizeLocalGetterToPropertyRector::class,
 
                 PrivatizeFinalClassMethodRector::class,
+
+                // unserialize() fills missing properties from their declared defaults without calling the
+                // constructor. Both rules move or drop those defaults, so an old queued job or cached object
+                // missing the key would be left with an uninitialized property.
+                ClassPropertyAssignToConstructorPromotionRector::class,
+                RemoveDefaultValueFromAssignedPropertyRector::class,
             ])
             ->withPreparedSets(
                 deadCode: true,
