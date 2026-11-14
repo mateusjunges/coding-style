@@ -54,6 +54,72 @@ After installing, run `composer cs` once to bring the existing code in line.
 
 The package also ships [Laravel Boost](https://github.com/laravel/boost) guidelines, so AI agents working on the application know to run `composer cs` and follow the same rules.
 
+## Usage
+
+### Day to day
+
+Run `composer cs` before committing. It runs Rector first, so Pint formats whatever Rector changed, and PHPStan last, on the final code. In CI, run `composer cs:check`, which fails instead of changing files.
+
+Arguments after `--` go to the tool, which is handy for working on part of the application:
+
+```bash
+composer lint -- --dirty              # Pint, only files with uncommitted changes
+composer lint -- app/Models           # Pint, one directory
+composer rector -- app/Models         # Rector, one directory
+composer types:check -- app/Models    # PHPStan, one directory
+```
+
+### Adopting it on an existing application
+
+The first `composer cs` on an existing application changes many files. Commit that run on its own, without other changes, so it is easy to review. Then add its commit hash to a `.git-blame-ignore-revs` file, which GitHub reads, so `git blame` skips the formatting commit:
+
+```bash
+git rev-parse HEAD >> .git-blame-ignore-revs
+git config blame.ignoreRevsFile .git-blame-ignore-revs
+```
+
+When PHPStan reports more errors than you can fix at once, record them in a baseline and fix them over time. PHPStan then reports only new errors:
+
+```bash
+vendor/bin/phpstan analyse --memory-limit=-1 --generate-baseline
+```
+
+Include the generated file in `phpstan.neon`:
+
+```neon
+includes:
+    - vendor/mateusjunges/coding-style/presets/phpstan.neon
+    - phpstan-baseline.neon
+```
+
+### Ignoring a rule in one place
+
+PHPStan errors can be ignored on a single line with the error identifier, which PHPStan prints next to each error:
+
+```php
+// @phpstan-ignore argument.type
+$service->handle($payload);
+```
+
+Rector rules can be skipped for specific paths in `rector.php`:
+
+```php
+return Rector::configure(__DIR__)
+    ->withSkip([
+        SomeRector::class => [
+            __DIR__.'/app/Legacy',
+        ],
+    ]);
+```
+
+Pint has no inline ignore. Exclude files with `notPath` or `exclude` in `pint.json`, or turn the rule off (see [Customizing an application](#customizing-an-application)).
+
+### Editors and AI agents
+
+Editor integrations that run the application's Pint, such as PhpStorm's Laravel Pint support and the Laravel extension for VS Code, read `pint.json`, so formatting on save follows the preset.
+
+If the application uses [Laravel Boost](https://github.com/laravel/boost), run `php artisan boost:update` after installing or updating this package, so its guidelines are added to the instructions your agents read.
+
 ## The rules
 
 ### Pint
