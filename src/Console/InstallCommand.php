@@ -6,6 +6,7 @@ namespace Junges\CodingStyle\Console;
 
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
+use Override;
 use stdClass;
 use Symfony\Component\Console\Attribute\AsCommand;
 
@@ -41,10 +42,12 @@ final class InstallCommand extends Command
         'cs:check' => ['@rector:check', '@lint:check', '@types:check'],
     ];
 
+    #[Override]
     protected $signature = 'coding-style:install
         {--workflow : Publish a GitHub Actions workflow that checks the coding style}
         {--force : Overwrite existing files and composer scripts}';
 
+    #[Override]
     protected $description = 'Install the Pint, Rector and PHPStan configuration and composer scripts';
 
     public function __construct(private readonly Filesystem $files)

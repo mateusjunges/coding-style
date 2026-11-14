@@ -13,7 +13,7 @@ beforeEach(function (): void {
         {
             "name": "laravel/laravel",
             "require": {
-                "php": "^8.3"
+                "php": "^8.5"
             },
             "extra": {
                 "laravel": {
