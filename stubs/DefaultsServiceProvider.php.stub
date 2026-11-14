@@ -1,0 +1,100 @@
+<?php
+
+declare(strict_types=1);
+
+namespace {{ namespace }};
+
+use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Date;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Sleep;
+use Illuminate\Validation\Rules\Password;
+
+/**
+ * Application wide defaults, published by mateusjunges/coding-style.
+ *
+ * This file belongs to the application: change or remove any default here.
+ */
+final class DefaultsServiceProvider extends ServiceProvider
+{
+    public function boot(): void
+    {
+        $this->configureCommands();
+        $this->configureDates();
+        $this->configureModels();
+        $this->configurePasswords();
+        $this->configureUrls();
+        $this->configureTests();
+    }
+
+    /**
+     * Refuse commands such as migrate:fresh and db:wipe in production.
+     */
+    private function configureCommands(): void
+    {
+        DB::prohibitDestructiveCommands($this->app->isProduction());
+    }
+
+    /**
+     * Return CarbonImmutable instances from now(), today() and model dates.
+     */
+    private function configureDates(): void
+    {
+        Date::use(CarbonImmutable::class);
+    }
+
+    /**
+     * Eager load relationships when they are first accessed on a collection, and outside production
+     * throw on lazy loading, on accessing missing attributes and on silently discarded attributes.
+     */
+    private function configureModels(): void
+    {
+        Model::automaticallyEagerLoadRelationships();
+
+        Model::shouldBeStrict(! $this->app->isProduction());
+    }
+
+    /**
+     * Require strong passwords in production.
+     */
+    private function configurePasswords(): void
+    {
+        Password::defaults(fn (): ?Password => $this->app->isProduction()
+            ? Password::min(12)
+                ->mixedCase()
+                ->letters()
+                ->numbers()
+                ->symbols()
+                ->uncompromised()
+            : null,
+        );
+    }
+
+    /**
+     * Generate HTTPS URLs in production.
+     */
+    private function configureUrls(): void
+    {
+        if ($this->app->isProduction()) {
+            URL::forceHttps();
+        }
+    }
+
+    /**
+     * Fail on HTTP requests that were not faked, and fake sleeps so tests never wait.
+     */
+    private function configureTests(): void
+    {
+        if (! $this->app->runningUnitTests()) {
+            return;
+        }
+
+        Http::preventStrayRequests();
+
+        Sleep::fake();
+    }
+}

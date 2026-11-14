@@ -15,6 +15,11 @@ beforeEach(function (): void {
             "require": {
                 "php": "^8.5"
             },
+            "autoload": {
+                "psr-4": {
+                    "App\\": "app/"
+                }
+            },
             "extra": {
                 "laravel": {
                     "dont-discover": []
@@ -55,7 +60,8 @@ it('publishes the configuration files', function (): void {
         ->and(file_get_contents($this->basePath.'/rector.php'))->toContain('Rector::configure(__DIR__)')
         ->and(file_get_contents($this->basePath.'/phpstan.neon'))->toContain('vendor/mateusjunges/coding-style/presets/phpstan.neon')
         ->and($this->basePath.'/.editorconfig')->toBeFile()
-        ->and($this->basePath.'/.github/workflows/coding-style.yml')->not->toBeFile();
+        ->and($this->basePath.'/.github/workflows/coding-style.yml')->not->toBeFile()
+        ->and($this->basePath.'/app/Providers/DefaultsServiceProvider.php')->not->toBeFile();
 });
 
 it('adds the composer scripts and keeps the rest of composer.json intact', function (): void {
@@ -95,6 +101,7 @@ it('asks before replacing an existing file', function (bool $answer, string $exp
     $this->artisan('coding-style:install')
         ->expectsConfirmation('The [pint.json] file already exists. Do you want to replace it?', $answer ? 'yes' : 'no')
         ->expectsConfirmation('Would you like to publish a GitHub Actions workflow that checks the coding style?', 'no')
+        ->expectsConfirmation('Would you like to publish a service provider with the application defaults?', 'no')
         ->assertSuccessful();
 
     expect(file_get_contents($this->basePath.'/pint.json'))->toContain($expected);
@@ -145,4 +152,46 @@ it('fails when the application has no composer.json file', function (): void {
     $this->artisan('coding-style:install', ['--no-interaction' => true])
         ->expectsOutputToContain('Unable to find the composer.json file.')
         ->assertFailed();
+});
+
+it('publishes the defaults provider and registers it', function (): void {
+    mkdir($this->basePath.'/bootstrap');
+    file_put_contents($this->basePath.'/bootstrap/providers.php', <<<'PHP'
+        <?php
+
+        return [
+            App\Providers\AppServiceProvider::class,
+        ];
+        PHP);
+
+    $this->artisan('coding-style:install', ['--defaults' => true, '--no-interaction' => true])->assertSuccessful();
+
+    expect(file_get_contents($this->basePath.'/app/Providers/DefaultsServiceProvider.php'))
+        ->toContain('namespace App\Providers;')
+        ->toContain('final class DefaultsServiceProvider extends ServiceProvider')
+        ->not->toContain('{{ namespace }}')
+        ->and(file_get_contents($this->basePath.'/bootstrap/providers.php'))
+        ->toContain('App\Providers\DefaultsServiceProvider::class');
+});
+
+it('asks to register the defaults provider when there is no bootstrap providers file', function (): void {
+    $this->artisan('coding-style:install', ['--defaults' => true, '--no-interaction' => true])
+        ->expectsOutputToContain('Register [App\Providers\DefaultsServiceProvider]')
+        ->assertSuccessful();
+
+    expect($this->basePath.'/app/Providers/DefaultsServiceProvider.php')->toBeFile();
+});
+
+it('points out defaults that AppServiceProvider already sets', function (): void {
+    mkdir($this->basePath.'/app/Providers', recursive: true);
+    file_put_contents($this->basePath.'/app/Providers/AppServiceProvider.php', <<<'PHP'
+        <?php
+
+        Date::use(CarbonImmutable::class);
+        DB::prohibitDestructiveCommands(app()->isProduction());
+        PHP);
+
+    $this->artisan('coding-style:install', ['--defaults' => true, '--no-interaction' => true])
+        ->expectsOutputToContain('AppServiceProvider already calls [Date::use, prohibitDestructiveCommands]')
+        ->assertSuccessful();
 });

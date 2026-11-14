@@ -6,6 +6,7 @@ namespace Junges\CodingStyle\Console;
 
 use Illuminate\Console\Command;
 use Illuminate\Filesystem\Filesystem;
+use Illuminate\Support\ServiceProvider;
 use Override;
 use stdClass;
 use Symfony\Component\Console\Attribute\AsCommand;
@@ -42,13 +43,29 @@ final class InstallCommand extends Command
         'cs:check' => ['@rector:check', '@lint:check', '@types:check'],
     ];
 
+    /**
+     * Calls in AppServiceProvider that the published defaults provider already makes.
+     *
+     * @var list<string>
+     */
+    private const array DUPLICATED_DEFAULTS = [
+        'Date::use(',
+        'prohibitDestructiveCommands(',
+        'Password::defaults(',
+        'shouldBeStrict(',
+        'automaticallyEagerLoadRelationships(',
+        'forceHttps(',
+        'preventStrayRequests(',
+    ];
+
     #[Override]
     protected $signature = 'coding-style:install
         {--workflow : Publish a GitHub Actions workflow that checks the coding style}
+        {--defaults : Publish a service provider with the application defaults}
         {--force : Overwrite existing files and composer scripts}';
 
     #[Override]
-    protected $description = 'Install the Pint, Rector and PHPStan configuration and composer scripts';
+    protected $description = 'Install the Pint, Rector and PHPStan configuration, composer scripts and application defaults';
 
     public function __construct(private readonly Filesystem $files)
     {
@@ -61,10 +78,14 @@ final class InstallCommand extends Command
             $this->publish($stub, $target);
         }
 
-        if ($this->shouldPublishWorkflow()) {
+        if ($this->shouldPublish('workflow', 'Would you like to publish a GitHub Actions workflow that checks the coding style?')) {
             $this->publish('coding-style.yml.stub', '.github/workflows/coding-style.yml', [
                 '{{ php }}' => PHP_MAJOR_VERSION.'.'.PHP_MINOR_VERSION,
             ]);
+        }
+
+        if ($this->shouldPublish('defaults', 'Would you like to publish a service provider with the application defaults?')) {
+            $this->publishDefaults();
         }
 
         if (! $this->addComposerScripts()) {
@@ -82,14 +103,14 @@ final class InstallCommand extends Command
      *
      * @param  array<string, string>  $replacements
      */
-    private function publish(string $stub, string $target, array $replacements = []): void
+    private function publish(string $stub, string $target, array $replacements = []): bool
     {
         $path = $this->laravel->basePath($target);
 
         if ($this->files->exists($path) && ! $this->shouldOverwrite($target)) {
             $this->components->twoColumnDetail($target, '<fg=yellow;options=bold>SKIPPED</>');
 
-            return;
+            return false;
         }
 
         $contents = strtr($this->files->get(__DIR__.'/../../stubs/'.$stub), $replacements);
@@ -98,6 +119,48 @@ final class InstallCommand extends Command
         $this->files->put($path, $contents);
 
         $this->components->twoColumnDetail($target, '<fg=green;options=bold>DONE</>');
+
+        return true;
+    }
+
+    /**
+     * Publish the defaults service provider, register it, and point out defaults AppServiceProvider already sets.
+     */
+    private function publishDefaults(): void
+    {
+        $namespace = $this->laravel->getNamespace().'Providers';
+
+        if (! $this->publish('DefaultsServiceProvider.php.stub', 'app/Providers/DefaultsServiceProvider.php', [
+            '{{ namespace }}' => $namespace,
+        ])) {
+            return;
+        }
+
+        $provider = $namespace.'\\DefaultsServiceProvider';
+
+        if (! ServiceProvider::addProviderToBootstrapFile($provider, $this->laravel->getBootstrapProvidersPath())) {
+            $this->components->warn("Register [{$provider}] in your application's service providers.");
+        }
+
+        $appServiceProvider = $this->laravel->path('Providers/AppServiceProvider.php');
+
+        if (! $this->files->exists($appServiceProvider)) {
+            return;
+        }
+
+        $contents = $this->files->get($appServiceProvider);
+
+        $duplicated = array_values(array_filter(
+            self::DUPLICATED_DEFAULTS,
+            fn (string $call): bool => str_contains($contents, $call),
+        ));
+
+        if ($duplicated !== []) {
+            $this->components->warn(sprintf(
+                'AppServiceProvider already calls [%s]. Remove those calls so the defaults are set in one place.',
+                implode(', ', array_map(fn (string $call): string => mb_rtrim($call, '('), $duplicated)),
+            ));
+        }
     }
 
     private function shouldOverwrite(string $target): bool
@@ -113,9 +176,9 @@ final class InstallCommand extends Command
         return confirm(label: "The [{$target}] file already exists. Do you want to replace it?", default: true);
     }
 
-    private function shouldPublishWorkflow(): bool
+    private function shouldPublish(string $option, string $question): bool
     {
-        if ($this->option('workflow')) {
+        if ($this->option($option)) {
             return true;
         }
 
@@ -123,7 +186,7 @@ final class InstallCommand extends Command
             return false;
         }
 
-        return confirm(label: 'Would you like to publish a GitHub Actions workflow that checks the coding style?', default: true);
+        return confirm(label: $question, default: true);
     }
 
     /**
