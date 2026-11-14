@@ -78,16 +78,16 @@ Every class that is not abstract is made `final` by Pint's `final_class` rule. P
 When a concrete class is extended, move the shared code into an abstract parent and let both concrete classes extend it:
 
 ```php
-abstract class NdviIndex extends VegetationIndex
+abstract class Report
 {
     // Shared behavior.
 }
 
-final class PlainNdviIndex extends NdviIndex
+final class SalesReport extends Report
 {
 }
 
-final class ContrastedNdviIndex extends NdviIndex
+final class DetailedSalesReport extends Report
 {
 }
 ```
