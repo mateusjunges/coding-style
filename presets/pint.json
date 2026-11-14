@@ -10,6 +10,7 @@
         "linebreak_after_opening_tag": false,
         "date_time_immutable": true,
         "declare_strict_types": true,
+        "final_class": true,
         "lowercase_keywords": true,
         "lowercase_static_reference": true,
         "fully_qualified_strict_types": true,

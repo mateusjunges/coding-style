@@ -73,6 +73,17 @@ PHPStan parameters set in `phpstan.neon` override the preset, for example a diff
 
 ## Notes
 
+Every class that is not abstract is made `final` by Pint's `final_class` rule. Pint does not check whether a class has children, so a concrete class that another class extends breaks after formatting. PHPStan reports it (`extends final class`) as part of `composer cs`, as long as both classes are inside the analysed paths. Make the parent `abstract` instead. Mockery cannot mock final classes either, so bind dependencies you mock to an interface. When a class really has to stay open, add a `@final` tag to its docblock and Pint leaves it alone:
+
+```php
+/**
+ * @final
+ */
+class PaymentGateway
+{
+}
+```
+
 The PHPStan preset includes the Larastan and Carbon extensions itself. If the application uses `phpstan/extension-installer`, PHPStan reports those files as included twice. Remove the extension installer, or replace the preset include with your own parameters.
 
 Pint only extends configuration files that live inside the project. Installing this package from a symlinked [path repository](https://getcomposer.org/doc/05-repositories.md#path) makes the preset resolve outside the project and Pint refuses it. Use `"options": {"symlink": false}` when testing local changes.
