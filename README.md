@@ -8,7 +8,7 @@ The rules live in this package and the application only keeps thin configuration
 
 ## Requirements
 
-PHP 8.5 and Laravel 12.8 or newer (Laravel 13 included).
+PHP 8.5 or newer and Laravel 13.
 
 ## Installation
 
