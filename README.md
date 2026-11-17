@@ -1,6 +1,6 @@
-<img src="assets/icon.svg" width="64" height="64" alt="">
-
 # Coding Style
+
+![Coding Style](art/coding-style.png)
 
 My coding style for Laravel applications, packaged so a new application gets the same Pint, Rector and PHPStan setup, and the same application defaults, with one command.
 
