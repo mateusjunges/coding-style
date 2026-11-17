@@ -2,6 +2,9 @@
 
 All relevant changes to `mateusjunges/coding-style` will be documented here.
 
+## [2026-11-17 v0.1.1](https://github.com/mateusjunges/coding-style/compare/v0.1.0...v0.1.1)
+* Skip Rector's `SeparateMultiUseImportsRector`, which split `use HasFactory, Notifiable;` and dropped the `@use HasFactory<UserFactory>` annotation, making PHPStan fail on new Laravel applications after the first `composer cs`.
+
 ## [2026-11-17 v0.1.0](https://github.com/mateusjunges/coding-style/releases/tag/v0.1.0)
 * Initial release, requiring PHP 8.5 or newer and Laravel 13.
 * Add a Pint preset that extends Pint's `laravel` preset with strict types, strict comparisons, final classes, ordered class elements, global namespace imports, multibyte string functions and immutable dates.
