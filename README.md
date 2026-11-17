@@ -178,6 +178,7 @@ These rules are skipped, because they break Laravel applications:
 | `PrivatizeFinalClassMethodRector` | Laravel calls methods such as `casts()`, accessors and scopes from the parent class, so they must stay protected |
 | `PrivatizeLocalGetterToPropertyRector` | Getters are sometimes required, for example by an interface |
 | `ClassPropertyAssignToConstructorPromotionRector`, `RemoveDefaultValueFromAssignedPropertyRector` | Move or drop property defaults. `unserialize()` fills missing properties from their declared defaults without calling the constructor, so a queued job or cached object serialized before the property existed ends up with an uninitialized property |
+| `SeparateMultiUseImportsRector` | Splits `use HasFactory, Notifiable;` into separate statements and drops the `@use HasFactory<UserFactory>` docblock, which PHPStan needs for the factory's generic type |
 
 Rector caches its results in `storage/framework/cache/rector`, which Laravel already ignores in git.
 

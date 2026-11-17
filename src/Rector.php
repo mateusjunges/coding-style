@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Junges\CodingStyle;
 
 use Rector\Config\RectorConfig;
+use Rector\CodingStyle\Rector\Use_\SeparateMultiUseImportsRector;
 use Rector\Configuration\RectorConfigBuilder;
 use Rector\DeadCode\Rector\Property\RemoveDefaultValueFromAssignedPropertyRector;
 use Rector\Php80\Rector\Class_\ClassPropertyAssignToConstructorPromotionRector;
@@ -63,6 +64,10 @@ final class Rector
                 // missing the key would be left with an uninitialized property.
                 ClassPropertyAssignToConstructorPromotionRector::class,
                 RemoveDefaultValueFromAssignedPropertyRector::class,
+
+                // Splitting `use HasFactory, Notifiable;` drops its `@use HasFactory<UserFactory>` docblock,
+                // which PHPStan needs for the factory's generic type.
+                SeparateMultiUseImportsRector::class,
             ])
             ->withPreparedSets(
                 deadCode: true,
